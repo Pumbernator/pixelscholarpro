@@ -51,12 +51,13 @@
 <body>
 
     <nav>
-        <div class="brand">OBSIDIAN_CORE</div>
-        <div class="nav-item active">DASHBOARD</div>
-        <div class="nav-item">THE_VAULT</div>
-        <div class="nav-item">CURRICULUM</div>
-        <div class="nav-item" style="margin-top: auto;" onclick="SysCore.logout()">DE-AUTHORIZE</div>
-    </nav>
+    <div class="brand">OBSIDIAN_CORE</div>
+    <div class="nav-item active" onclick="showModule('overview')">DASHBOARD</div>
+    <div class="nav-item" onclick="showModule('vault')">THE_VAULT</div>
+    <div class="nav-item" onclick="showModule('curriculum')">CURRICULUM</div>
+    
+    <div class="nav-item" style="margin-top: auto;" onclick="SysCore.logout()">DE-AUTHORIZE</div>
+</nav>
 
     <main>
         <div class="header">
@@ -95,43 +96,77 @@
         </div>
     </main>
 
-    <script src="core.js"></script>
-    <script>
-        // Secure Access Check
-        const user = SysCore.checkAccess('student');
-        document.getElementById('display-name').innerText = `USER // ${user.name.toUpperCase()}`;
+   <script src="core.js"></script>
+<script>
+    // 1. SYSTEM INITIALIZATION
+    const user = SysCore.checkAccess('student');
+    document.getElementById('display-name').innerText = `USER // ${user.name.toUpperCase()}`;
 
-        // AI Query Logic
-        function runQuery() {
-            const q = document.getElementById('ai-query');
-            const log = document.getElementById('ai-log');
-            if(!q.value) return;
+    // 2. DATA STORAGE (Keep this OUTSIDE the functions so it saves your marks)
+    let subjectList = [];
 
-            log.innerHTML += `<br><span style="color:white">> ${q.value}</span>`;
-            
-            // Professional AI Simulation
-            setTimeout(() => {
-                log.innerHTML += `<br>> Processing... Analyzing ${user.name}'s performance metrics.`;
-                log.innerHTML += `<br>> RECOMMENDATION: Focus on active recall for current theory modules.`;
-                log.scrollTop = log.scrollHeight;
-            }, 800);
-            
-            q.value = '';
+    // 3. GPA CALCULATION LOGIC
+    function addSubject() {
+        const name = document.getElementById('sub-name').value;
+        const mark = parseFloat(document.getElementById('sub-mark').value);
+        
+        if(!name || isNaN(mark)) {
+            alert("INPUT_ERROR: Valid Subject and Mark required.");
+            return;
         }
 
-        // GPA Logic
-        let marks = [];
-        function addSubject() {
-            const m = parseFloat(document.getElementById('sub-mark').value);
-            if(isNaN(m) || m < 0 || m > 100) return;
-            
-            marks.push(m);
-            const avg = marks.reduce((a,b) => a+b, 0) / marks.length;
-            const gpa = (avg / 100) * 4.0; // Standard 4.0 mapping
-            document.getElementById('gpa-stats').innerText = `GPA: ${gpa.toFixed(2)}`;
-            document.getElementById('sub-mark').value = '';
-            document.getElementById('sub-name').value = '';
-        }
-    </script>
+        // Add to our list
+        subjectList.push({ name, mark });
+        
+        // Calculate GPA
+        const total = subjectList.reduce((sum, item) => sum + item.mark, 0);
+        const avg = total / subjectList.length;
+        const gpa = (avg / 100) * 4.0;
+        
+        // Update UI
+        document.getElementById('gpa-stats').innerText = `GPA: ${gpa.toFixed(2)}`;
+        
+        // Clear Inputs
+        document.getElementById('sub-name').value = '';
+        document.getElementById('sub-mark').value = '';
+        
+        console.log("Data Logged:", subjectList);
+    }
+
+    // 4. NAVIGATION LOGIC (This makes your sidebar buttons work)
+    function showModule(moduleID) {
+    // Remove 'active' class from all nav items
+    const items = document.querySelectorAll('.nav-item');
+    items.forEach(item => item.classList.remove('active'));
+
+    // Highlight the button you just clicked
+    event.target.classList.add('active');
+
+    // Action logic
+    if(moduleID === 'vault') {
+        alert("VAULT_ACCESS: Initializing file-system logic...");
+    } else if(moduleID === 'curriculum') {
+        alert("CURRICULUM_LOG: Fetching semester syllabus...");
+    } else if(moduleID === 'overview') {
+        console.log("System Overview Active.");
+    }
+}
+
+    // 5. AI TERMINAL LOGIC
+    function runQuery() {
+        const q = document.getElementById('ai-query');
+        const log = document.getElementById('ai-log');
+        if(!q.value) return;
+
+        log.innerHTML += `<br><span style="color:white">> ${q.value}</span>`;
+        
+        setTimeout(() => {
+            log.innerHTML += `<br>> Processing request... Secure link active.`;
+            log.scrollTop = log.scrollHeight;
+        }, 600);
+        
+        q.value = '';
+    }
+</script>
 </body>
 </html>
