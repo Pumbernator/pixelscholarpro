@@ -3,170 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Obsidian // Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <title>Obsidian // System Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #050505; --card: #0d0d0d; --silver: #e0e0e0; --border: rgba(255,255,255,0.05); --dim: #444; }
-        body { 
-            margin: 0; background: var(--bg); color: var(--silver); 
-            font-family: 'Inter', sans-serif; display: flex; height: 100vh;
-        }
+        body { margin: 0; background: var(--bg); color: var(--silver); font-family: 'Inter', sans-serif; display: flex; height: 100vh; overflow: hidden; }
 
-        /* Sidebar Navigation */
-        nav {
-            width: 260px; border-right: 1px solid var(--border);
-            padding: 40px 20px; display: flex; flex-direction: column;
-        }
+        /* Sidebar */
+        nav { width: 260px; border-right: 1px solid var(--border); padding: 40px 20px; display: flex; flex-direction: column; background: #000; }
         .brand { font-family: 'Orbitron', sans-serif; letter-spacing: 4px; font-size: 0.9rem; margin-bottom: 60px; }
-        .nav-item { 
-            color: var(--dim); text-decoration: none; padding: 15px 0; 
-            font-size: 0.75rem; letter-spacing: 2px; transition: 0.3s; cursor: pointer;
-        }
+        .nav-item { color: var(--dim); text-decoration: none; padding: 15px 0; font-size: 0.75rem; letter-spacing: 2px; transition: 0.3s; cursor: pointer; }
         .nav-item:hover, .nav-item.active { color: var(--silver); }
 
-        /* Main Content Viewport */
+        /* Main Viewport */
         main { flex-grow: 1; padding: 60px; overflow-y: auto; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 60px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
         .user-id { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; color: var(--dim); }
 
-        .grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; }
-        .module { background: var(--card); border: 1px solid var(--border); padding: 30px; }
-        .module-h { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 3px; color: var(--dim); margin-bottom: 20px; text-transform: uppercase; }
+        /* Content Modules (Hidden by default) */
+        .module-section { display: none; animation: fadeIn 0.5s ease forwards; }
+        .module-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Registrar / GPA Input */
-        .data-row { display: flex; gap: 10px; margin-bottom: 15px; }
-        input, select { 
-            background: transparent; border: 1px solid var(--border); color: white; 
-            padding: 10px; font-family: 'Inter'; font-size: 0.8rem; outline: none;
-        }
+        .grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 30px; margin-bottom: 20px; }
+        .card-h { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 3px; color: var(--dim); margin-bottom: 20px; text-transform: uppercase; }
+
+        /* Input Styles */
+        input, select { background: transparent; border: 1px solid var(--border); color: white; padding: 10px; font-family: 'Inter'; width: 100%; box-sizing: border-box; outline: none; margin-bottom: 10px; }
         input:focus { border-color: var(--silver); }
+        .btn-action { background: var(--silver); color: var(--bg); border: none; padding: 12px; font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer; width: 100%; letter-spacing: 2px; }
 
         /* Terminal AI */
-        .terminal { background: #000; padding: 20px; height: 200px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #888; border: 1px solid var(--border); }
-        .term-input { width: 100%; margin-top: 10px; border: none; border-bottom: 1px solid var(--border); }
-
-        .btn-action { background: var(--silver); color: var(--bg); border: none; padding: 10px 20px; font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer; }
+        .terminal { background: #000; padding: 20px; height: 180px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; color: #666; border: 1px solid var(--border); margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
     <nav>
-    <div class="brand">OBSIDIAN_CORE</div>
-    <div class="nav-item active" onclick="showModule('overview')">DASHBOARD</div>
-    <div class="nav-item" onclick="showModule('vault')">THE_VAULT</div>
-    <div class="nav-item" onclick="showModule('curriculum')">CURRICULUM</div>
-    
-    <div class="nav-item" style="margin-top: auto;" onclick="SysCore.logout()">DE-AUTHORIZE</div>
-</nav>
+        <div class="brand">OBSIDIAN_CORE</div>
+        <div class="nav-item active" onclick="switchTab('overview', this)">DASHBOARD</div>
+        <div class="nav-item" onclick="switchTab('vault', this)">THE_VAULT</div>
+        <div class="nav-item" onclick="switchTab('curriculum', this)">CURRICULUM</div>
+        <div class="nav-item" style="margin-top: auto;" onclick="SysCore.logout()">DE-AUTHORIZE</div>
+    </nav>
 
     <main>
         <div class="header">
             <div>
-                <h1 style="margin:0; font-weight: 300; letter-spacing: -1px;">System Overview</h1>
-                <p style="color:var(--dim); font-size: 0.9rem;">Welcome back to your synchronized study environment.</p>
+                <h1 style="margin:0; font-weight: 300; letter-spacing: -1px;" id="view-title">System Overview</h1>
             </div>
-            <div class="user-id" id="display-name">USER_LOADING...</div>
+            <div class="user-id" id="display-name">USER // LOADING...</div>
         </div>
 
-        <div class="grid">
-            <div class="module">
-                <div class="module-h">AI_CONSULTANT_V1</div>
-                <div class="terminal" id="ai-log">
-                    > Initializing connection...<br>
-                    > Secure link established.<br>
-                    > How can I assist your research today?
+        <section id="overview" class="module-section active">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-h">AI_CONSULTANT</div>
+                    <div class="terminal" id="ai-log">> Connection Secure... How can I assist?</div>
+                    <input type="text" id="ai-query" placeholder="Ask AI..." onkeypress="if(event.key==='Enter') runAI()">
                 </div>
-                <input type="text" class="input term-input" id="ai-query" placeholder="Enter query..." onkeypress="if(event.key==='Enter') runQuery()">
-            </div>
 
-            <div class="module">
-                <div class="module-h">GPA_REGISTRAR</div>
-                <select id="uni-select" style="width:100%; margin-bottom: 20px;">
-                    <option>Global Standard (4.0 Scale)</option>
-                    <option>UK Honours Classification</option>
-                    <option>University of Botswana (Scale 5.0)</option>
+                <div class="card">
+                    <div class="card-h">GPA_REGISTRAR</div>
+                    <input type="text" id="sub-name" placeholder="Subject Name">
+                    <input type="number" id="sub-mark" placeholder="Score (%)">
+                    <button class="btn-action" onclick="calculateGPA()">RECORD_DATA</button>
+                    <div id="gpa-display" style="margin-top: 20px; font-family: 'Orbitron'; font-size: 2rem;">4.00</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="vault" class="module-section">
+            <div class="card">
+                <div class="card-h">THE_VAULT</div>
+                <p style="color: #666;">Secure file storage and voice memo encryption pending...</p>
+                <div style="border: 2px dashed var(--dim); padding: 50px; text-align: center; color: var(--dim);">
+                    DROP_FILES_FOR_ENCRYPTION
+                </div>
+            </div>
+        </section>
+
+        <section id="curriculum" class="module-section">
+            <div class="card">
+                <div class="card-h">CURRICULUM_DATABASE</div>
+                <p>Select your university to sync modules...</p>
+                <select>
+                    <option>University of Botswana</option>
+                    <option>Global Standard</option>
                 </select>
-                <div class="data-row">
-                    <input type="text" id="sub-name" placeholder="Subject" style="flex:2">
-                    <input type="number" id="sub-mark" placeholder="%" style="flex:1">
-                </div>
-                <button class="btn-action" style="width:100%" onclick="addSubject()">Record Data</button>
-                <div id="gpa-stats" style="margin-top: 25px; font-size: 1.5rem; font-family: 'Orbitron';">GPA: 0.00</div>
             </div>
-        </div>
+        </section>
     </main>
 
-   <script src="core.js"></script>
-<script>
-    // 1. SYSTEM INITIALIZATION
-    const user = SysCore.checkAccess('student');
-    document.getElementById('display-name').innerText = `USER // ${user.name.toUpperCase()}`;
+    <script src="core.js"></script>
+    <script>
+        // 1. Initial Identity Check
+        const user = SysCore.checkAccess('student');
+        document.getElementById('display-name').innerText = `USER // ${user.name.toUpperCase()}`;
 
-    // 2. DATA STORAGE (Keep this OUTSIDE the functions so it saves your marks)
-    let subjectList = [];
+        // 2. Navigation Control (The Content Swapper)
+        function switchTab(tabId, element) {
+            // Update Navigation UI
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
 
-    // 3. GPA CALCULATION LOGIC
-    function addSubject() {
-        const name = document.getElementById('sub-name').value;
-        const mark = parseFloat(document.getElementById('sub-mark').value);
-        
-        if(!name || isNaN(mark)) {
-            alert("INPUT_ERROR: Valid Subject and Mark required.");
-            return;
+            // Switch Content
+            document.querySelectorAll('.module-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            // Update Title
+            document.getElementById('view-title').innerText = tabId.toUpperCase().replace('_', ' ');
         }
 
-        // Add to our list
-        subjectList.push({ name, mark });
-        
-        // Calculate GPA
-        const total = subjectList.reduce((sum, item) => sum + item.mark, 0);
-        const avg = total / subjectList.length;
-        const gpa = (avg / 100) * 4.0;
-        
-        // Update UI
-        document.getElementById('gpa-stats').innerText = `GPA: ${gpa.toFixed(2)}`;
-        
-        // Clear Inputs
-        document.getElementById('sub-name').value = '';
-        document.getElementById('sub-mark').value = '';
-        
-        console.log("Data Logged:", subjectList);
-    }
+        // 3. GPA Logic
+        let marks = [];
+        function calculateGPA() {
+            const name = document.getElementById('sub-name').value;
+            const mark = parseFloat(document.getElementById('sub-mark').value);
+            
+            if(!name || isNaN(mark)) return alert("Enter valid data");
 
-    // 4. NAVIGATION LOGIC (This makes your sidebar buttons work)
-    function showModule(moduleID) {
-    // Remove 'active' class from all nav items
-    const items = document.querySelectorAll('.nav-item');
-    items.forEach(item => item.classList.remove('active'));
+            marks.push(mark);
+            const avg = marks.reduce((a,b) => a+b, 0) / marks.length;
+            const gpa = (avg / 100) * 4.0;
 
-    // Highlight the button you just clicked
-    event.target.classList.add('active');
+            document.getElementById('gpa-display').innerText = gpa.toFixed(2);
+            document.getElementById('sub-name').value = '';
+            document.getElementById('sub-mark').value = '';
+            
+            document.getElementById('ai-log').innerHTML += `<br>> Recorded ${name}: ${mark}%`;
+        }
 
-    // Action logic
-    if(moduleID === 'vault') {
-        alert("VAULT_ACCESS: Initializing file-system logic...");
-    } else if(moduleID === 'curriculum') {
-        alert("CURRICULUM_LOG: Fetching semester syllabus...");
-    } else if(moduleID === 'overview') {
-        console.log("System Overview Active.");
-    }
-}
+        // 4. AI Logic
+        function runAI() {
+            const q = document.getElementById('ai-query');
+            const log = document.getElementById('ai-log');
+            if(!q.value) return;
 
-    // 5. AI TERMINAL LOGIC
-    function runQuery() {
-        const q = document.getElementById('ai-query');
-        const log = document.getElementById('ai-log');
-        if(!q.value) return;
-
-        log.innerHTML += `<br><span style="color:white">> ${q.value}</span>`;
-        
-        setTimeout(() => {
-            log.innerHTML += `<br>> Processing request... Secure link active.`;
-            log.scrollTop = log.scrollHeight;
-        }, 600);
-        
-        q.value = '';
-    }
-</script>
+            log.innerHTML += `<br><span style="color:white">> ${q.value}</span>`;
+            setTimeout(() => {
+                log.innerHTML += `<br>> Analysis complete. Recommend focusing on upcoming milestones.`;
+                log.scrollTop = log.scrollHeight;
+            }, 600);
+            q.value = '';
+        }
+    </script>
 </body>
 </html>
